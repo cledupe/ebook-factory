@@ -1969,15 +1969,26 @@ Adicionar serviço `grafana` ao compose. Provisionar Prometheus como datasource 
 
 **Objetivo:** Pronto para usuários reais.
 
-### Task 7.1: Autenticação (Supabase Auth)
+### Task 7.1: Autenticação com OTP + Supabase Auth
 
 **Files:**
 - Modify: `apps/backend/src/app/api/deps.py`
 - Create: `apps/backend/src/app/auth/jwt.py`
+- Create: `apps/backend/src/app/auth/otp.py`
 - Create: `apps/frontend/lib/auth/supabase.ts`
 - Create: `apps/frontend/middleware.ts`
 
 JWT verification no backend. Session no frontend. Adicionar `user_id` em Project e RLS policies no Postgres.
+
+**OTP Authorization:** Toda ação crítica (aprovar/rejeitar artefato, iniciar conversão, deletar projeto) exige confirmação via OTP enviado ao email do usuário. O fluxo é:
+
+1. Usuário solicita ação crítica
+2. Backend gera código OTP de 6 dígitos (expira em 5 min) e persiste em Redis
+3. Backend envia OTP via e-mail (ou exibe no frontend em dev)
+4. Usuário submete OTP junto com a ação
+5. Backend valida OTP no Redis antes de executar a ação
+
+Mecanismo reutilizável via decorator/dependency `require_otp` que pode ser aplicado a qualquer endpoint.
 
 ### Task 7.2: Tratamento de erros global
 
@@ -2033,12 +2044,13 @@ Docs cobrindo: arquitetura, setup local, deploy com Docker Compose em VPS (Caddy
 | Interações de IA rastreáveis | 3.1, 6.1, 6.3 |
 | Histórico de versões por artefato | 1.6, 4.5, 7.3 |
 | Pontos de aprovação humana | 2.2, 2.4, 2.5, 4.3 |
+| Autorização OTP em ações críticas | 7.1 |
 
 ## Self-Review
 
 **Spec coverage:** PRD §1-12 cobertos: §3 (fluxo)→P2-P4; §4 (HITL)→2.2/2.4/2.5; §5 (Reflection)→3.5/3.6; §6 (Arquitetura)→P0/P1; §7 (Stack)→tasks específicas; §8 (Observabilidade)→P6; §9 (Persistência)→1.3/1.4; §10 (Workflow Engine)→P2; §11 (Storage)→1.7; §12 (MVP)→mapeamento acima.
 
-**Gaps identificados:** Autenticação (PRD implícita) é P7.1; testes E2E são P7.5. Sem gaps abertos.
+**Gaps identificados:** Autenticação (PRD implícita) é P7.1; OTP authorization adicionada como camada extra de segurança no approval flow; testes E2E são P7.5. Sem gaps abertos.
 
 **Type consistency:** Modelos SQLAlchemy (1.3), schemas Pydantic (1.5) e router endpoints (1.5/1.6) compartilham nomes de campos; state Pydantic (2.1) referencia `current_stage` consistente com `ProjectStatus` (1.3); Artefatos e Approvals usam `id` UUID em todo o plano.
 
