@@ -1,0 +1,11 @@
+{
+  "name": "@ebook-factory/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'frontend not initialized yet'",
+    "build": "echo 'skip'",
+    "lint": "echo 'skip'",
+    "test": "echo 'skip'"
+  }
+}
