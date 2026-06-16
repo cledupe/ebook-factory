@@ -1,0 +1,33 @@
+# Ebook Factory - Caddyfile
+# Substitua os dominios pelos reais antes de deploy
+
+ebook-factory.com, www.ebook-factory.com {
+    reverse_proxy frontend:3000
+
+    log {
+        output file /data/logs/frontend.log
+    }
+}
+
+api.ebook-factory.com {
+    reverse_proxy backend:8000
+
+    @health {
+        path /health*
+    }
+    handle @health {
+        reverse_proxy backend:8000
+    }
+
+    log {
+        output file /data/logs/api.log
+    }
+}
+
+langfuse.ebook-factory.com {
+    reverse_proxy langfuse:3000
+
+    log {
+        output file /data/logs/langfuse.log
+    }
+}
