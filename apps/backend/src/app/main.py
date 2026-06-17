@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from src.app.api import approvals, artifacts, chapters, health, projects
+from src.app.api import approvals, artifacts, chapters, health, projects, workflows
 
 
 @asynccontextmanager
@@ -17,6 +17,7 @@ def create_app() -> FastAPI:
     app.include_router(chapters.router)
     app.include_router(artifacts.router)
     app.include_router(approvals.router)
+    app.include_router(workflows.router)
     return app
 
 
